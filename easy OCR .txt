@@ -1,0 +1,95 @@
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+import os
+from PIL import Image, ImageTk
+from ocr import recognizer
+
+# filePath = ""
+
+
+def nameChange(filename):
+    list = filename.split("/")
+    l = len(list)
+    button_Select_Image.configure(text=list[l-1])
+
+
+def showImage():
+    fln = filedialog.askopenfilename(initialdir=os.getcwd(), title="Select a Image", filetypes=(("image", ".jpeg"),
+                                                                                                ("image", ".png"),  ("image", ".jpg"),))
+
+    if (fln):
+        global filePath 
+        filePath = fln
+        nameChange(fln)
+        img = Image.open(fln)
+        img.thumbnail((200, 400))
+        img = ImageTk.PhotoImage(img)
+        Image_Show.configure(image=img)
+        Image_Show.image = img
+
+
+def recognize():
+    output = recognizer(filePath)
+    label_Result.configure(text="Result:"+output)
+
+
+# Create the root window
+window = Tk()
+
+window.title('Character Recognizer')
+window.geometry("500x500")
+window.config(background="white")
+
+# Create a File Explorer label
+heading = Label(window,
+                text="Handwritten Character Recognizer",
+                width=65, height=4,
+                fg="white", font=("Helvetica", 10), bg="skyblue")
+heading.grid(column=0, row=0)
+
+label = Label(window,
+              width=65, height=4,
+              fg="white", font=("Helvetica", 10), bg="skyblue")
+label.grid(column=0, row=1)
+
+style = ttk.Style()
+style.configure('W.TButton', font=('Helvetica', 10, 'bold'))
+button_Select_Image = ttk.Button(window,
+                                 text="Select image",
+                                 style='W.TButton',
+                                 command=showImage,
+                                 )
+
+button_Select_Image.grid(column=0, row=1, padx=30,
+                         pady=20, ipadx=15, ipady=10)
+
+Image_Show = Label(window, bg="white")
+Image_Show.grid(column=0, row=2, padx=20, pady=5, ipadx=20)
+
+
+recognize = ttk.Button(window,
+                       text="Recognize",
+                       style='W.TButton',
+                       command=recognize)
+recognize.grid(column=0, row=2, padx=30, pady=100,
+               ipadx=15, ipady=2, sticky=W)
+
+""" 
+
+
+button_exit = ttk.Button(window,
+                         style='W.TButton',
+                         text="Exit",
+                         command=exit
+                         )
+
+button_exit.grid(column=0, row=3, padx=30, ipadx=15, ipady=2, sticky=W) """
+
+label_Result = Label(window,
+                     text="Result :",
+                     fg="black", font=("Helvetica", 15), bg="white")
+label_Result.grid(column=0, row=3, padx=30, sticky=W)
+
+
+window.mainloop()
