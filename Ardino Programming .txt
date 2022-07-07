@@ -1,0 +1,126 @@
+#include<DHT.h>
+
+#include<ESP8266WiFi.h>
+
+#define DHTPIN D5
+
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+const char* wname = "arvindjain";
+
+const char* pass = "arvind98";
+
+const char* host = "webumblebees.com";
+
+String url = "http://www.webumblebees.com/apinterface/script.php";
+
+String api = "b0035a938c911d16d76d6f10ba5f18bf43ebe00d";
+
+int wifi = D4;
+
+int sync = D0;
+
+void setup() 
+
+{
+  
+// put your setup code here, to run once:
+ 
+ Serial.begin(9600);
+
+ WiFi.begin(wname,pass);
+  pinMode(sync, OUTPUT);
+   
+pinMode(wifi, OUTPUT);
+ 
+ 
+while(WiFi.status() != WL_CONNECTED)
+  
+{
+  
+digitalWrite(wifi, HIGH);
+  delay(500);
+  
+digitalWrite(wifi, LOW);
+  delay(500);
+  
+}
+  
+digitalWrite(wifi, LOW);
+ 
+ dht.begin();
+  
+delay(2000);
+
+}
+
+void loop() 
+{
+  
+String url = "http://www.webumblebees.com/apinterface/script.php";
+  // put your main code here, to run repeatedly:
+ 
+float t = dht.readTemperature();
+ 
+float h = dht.readHumidity();
+
+ delay(1000);
+ WiFiClient client;
+ 
+const int port = 80;
+ if(!client.connect(host,port))
+
+ {
+   Serial.println("Connection Failed");
+ 
+  digitalWrite(sync,HIGH);
+   return;
+ }
+ 
+ url += "?api=";
+ 
+ url += api;
+  url += "&p1=";
+  url += (String)t;  
+ 
+ url += "&p2=";
+  url += (String)h;
+  
+
+
+  Serial.println(url);//print complete URL
+ 
+ client.print(String ("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "connection: close\r\n\r\n");
+  
+unsigned long timeout = millis();
+  while (client.available() == 0)
+   {
+    if(millis() - timeout > 5000)
+    {
+      Serial.println("Connection timeout");
+    
+  client.stop();
+      return;
+     }
+    }
+    if(client.available())
+    {
+      String data = client.readStringUntil('\r');
+     
+ Serial.print(data);
+      for(int j=1;j<=10;j++)
+      {
+        digitalWrite(sync, LOW);
+        delay(100);
+        digitalWrite(sync, HIGH);
+     
+   delay(100);
+      }
+    }
+    digitalWrite(sync, HIGH); // turn sync led off
+    delay(5000);
+    }
+   
+ 
+
